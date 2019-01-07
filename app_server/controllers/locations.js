@@ -1,33 +1,42 @@
+var Parse = require('parse/node');
+const _ = require('underscore');
+
+Parse.initialize('myAppId');
+Parse.serverURL = ('http://localhost:1337/parse');
+
 /* GET 'home' page */
-module.exports.homelist = function(req, res) {
-    res.render('locations-list', {
-        title: 'Loc8r - find a place to work with wifi',
-        pageHeader: {
-            title: 'Loc8r',
-            strapline: 'Find places to work with wifi near you!'
-        },
-        sidebar: "Looking for wifi and a seat? Loc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let Loc8r help you find the place you're looking for.",
-        locations: [{
-            name: 'Starcups',
-            address: '125 High Street, Reading, RG6 1PS',
-            rating: 3,
-            facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-            distance: '100m'
-        }, {
-            name: 'Cafe Hero',
-            address: '125 High Street, Reading, RG6 1PS',
-            rating: 4,
-            facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-            distance: '200m'
-        }, {
-            name: 'Burger Queen',
-            address: '125 High Street, Reading, RG6 1PS',
-            rating: 2,
-            facilities: ['Food', 'Premium wifi'],
-            distance: '250m'
-        }]
+function homelist(req, res) {
+    let list = [];
+    let locations = new Parse.Query('locations');
+    locations.find().then((results) => {
+        _.each(results, (objectListing) => {
+            locationObject = {
+                name: objectListing.get('name'),
+                address: objectListing.get('address'),
+                rating: objectListing.get('rating'),
+                facilities: objectListing.get('facilities'),
+                distance: '',
+            };
+            list.push(locationObject);
+        });
+        res.render('locations-list', {
+            title: 'Loc8r - find a place to work with wifi',
+            pageHeader: {
+                title: 'Loc8r',
+                strapline: 'Find places to work with wifi near you!'
+            },
+            sidebar: "Looking for wifi and a seat? Loc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let Loc8r help you find the place you're looking for.",
+            
+            locations: list,
+        });
+    }).catch((err) => {  
+        console.log(err);  
     });
 };
+
+module.exports = {
+    homelist: homelist,
+}
 
 /* GET 'Location info' page */
 module.exports.locationInfo = function(req, res) {
